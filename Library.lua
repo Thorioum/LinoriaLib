@@ -2359,7 +2359,7 @@ do
                 return Dropdown.Value and 1 or 0;
             end;
         end;
-
+        
         function Dropdown:BuildDropdownList()
             local Values = Dropdown.Values;
             local Buttons = {};
@@ -2515,11 +2515,7 @@ do
 
                 Dropdown.Value = nTable;
             else
-                if (not Val) then
-                    Dropdown.Value = nil;
-                elseif table.find(Dropdown.Values, Val) then
-                    Dropdown.Value = Val;
-                end;
+                Dropdown.Value = Val;
             end;
 
             Dropdown:BuildDropdownList();
