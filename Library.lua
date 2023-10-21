@@ -30,9 +30,10 @@ local Library = {
     HudRegistry = {};
 
     FontColor = Color3.fromRGB(255, 255, 255);
-    MainColor = Color3.fromRGB(28, 28, 28);
-    BackgroundColor = Color3.fromRGB(20, 20, 20);
-    AccentColor = Color3.fromRGB(0, 85, 255);
+    MainColor = Color3.fromRGB(19,25,28);
+    BackgroundColor = Color3.fromRGB(31, 37, 40);
+    TabBackgroundColor = Color3.fromRGB(25, 27, 29);
+    AccentColor = Color3.fromRGB(190, 240, 255);
     OutlineColor = Color3.fromRGB(50, 50, 50);
     RiskColor = Color3.fromRGB(255, 50, 50),
 
@@ -1747,7 +1748,6 @@ do
 
         if Textbox.Finished then
             Box.FocusLost:Connect(function(enter)
-                if not enter then return end
 
                 Textbox:SetValue(Box.Text);
                 Library:AttemptSave();
@@ -2177,20 +2177,20 @@ do
         local Container = Groupbox.Container;
 
         local RelativeOffset = 0;
-
-        if not Info.Compact then
-            local DropdownLabel = Library:CreateLabel({
-                Size = UDim2.new(1, 0, 0, 10);
-                TextSize = 14;
-                Text = Info.Text;
-                TextXAlignment = Enum.TextXAlignment.Left;
-                TextYAlignment = Enum.TextYAlignment.Bottom;
-                ZIndex = 5;
-                Parent = Container;
-            });
-
-            Groupbox:AddBlank(3);
+        
+        local DropdownLabel = Library:CreateLabel({
+            Size = UDim2.new(1, 0, 0, 10);
+            TextSize = 14;
+            Text = Info.Text;
+            TextXAlignment = Enum.TextXAlignment.Left;
+            TextYAlignment = Enum.TextYAlignment.Bottom;
+            ZIndex = 5;
+            Parent = Container;
+        });
+        function Dropdown:GetDisplayName()
+            return Info.Text;
         end
+        Groupbox:AddBlank(3);
 
         for _, Element in next, Container:GetChildren() do
             if not Element:IsA('UIListLayout') then
@@ -2515,11 +2515,7 @@ do
 
                 Dropdown.Value = nTable;
             else
-                if (not Val) then
-                    Dropdown.Value = nil;
-                elseif table.find(Dropdown.Values, Val) then
-                    Dropdown.Value = Val;
-                end;
+                Dropdown.Value = Val;
             end;
 
             Dropdown:BuildDropdownList();
@@ -3119,7 +3115,7 @@ function Library:CreateWindow(...)
             CanvasSize = UDim2.new(0, 0, 0, 0);
             BottomImage = '';
             TopImage = '';
-            ScrollBarThickness = 0;
+            ScrollBarThickness = 5;
             ZIndex = 2;
             Parent = TabFrame;
         });
@@ -3132,7 +3128,7 @@ function Library:CreateWindow(...)
             CanvasSize = UDim2.new(0, 0, 0, 0);
             BottomImage = '';
             TopImage = '';
-            ScrollBarThickness = 0;
+            ScrollBarThickness = 5;
             ZIndex = 2;
             Parent = TabFrame;
         });
@@ -3521,44 +3517,7 @@ function Library:CreateWindow(...)
             -- A bit scuffed, but if we're going from not toggled -> toggled we want to show the frame immediately so that the fade is visible.
             Outer.Visible = true;
 
-            task.spawn(function()
-                -- TODO: add cursor fade?
-                local State = InputService.MouseIconEnabled;
-
-                local Cursor = Drawing.new('Triangle');
-                Cursor.Thickness = 1;
-                Cursor.Filled = true;
-                Cursor.Visible = true;
-
-                local CursorOutline = Drawing.new('Triangle');
-                CursorOutline.Thickness = 1;
-                CursorOutline.Filled = false;
-                CursorOutline.Color = Color3.new(0, 0, 0);
-                CursorOutline.Visible = true;
-
-                while Toggled and ScreenGui.Parent do
-                    InputService.MouseIconEnabled = false;
-
-                    local mPos = InputService:GetMouseLocation();
-
-                    Cursor.Color = Library.AccentColor;
-
-                    Cursor.PointA = Vector2.new(mPos.X, mPos.Y);
-                    Cursor.PointB = Vector2.new(mPos.X + 16, mPos.Y + 6);
-                    Cursor.PointC = Vector2.new(mPos.X + 6, mPos.Y + 16);
-
-                    CursorOutline.PointA = Cursor.PointA;
-                    CursorOutline.PointB = Cursor.PointB;
-                    CursorOutline.PointC = Cursor.PointC;
-
-                    RenderStepped:Wait();
-                end;
-
-                InputService.MouseIconEnabled = State;
-
-                Cursor:Remove();
-                CursorOutline:Remove();
-            end);
+           
         end;
 
         for _, Desc in next, Outer:GetDescendants() do
