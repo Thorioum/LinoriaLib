@@ -19,7 +19,7 @@ ScreenGui.Parent = CoreGui;
 
 local Toggles = {};
 local Options = {};
-
+print("gay")
 getgenv().Toggles = Toggles;
 getgenv().Options = Options;
 
