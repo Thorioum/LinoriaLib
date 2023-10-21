@@ -19,7 +19,7 @@ ScreenGui.Parent = CoreGui;
 
 local Toggles = {};
 local Options = {};
-print("gay")
+
 getgenv().Toggles = Toggles;
 getgenv().Options = Options;
 
@@ -1011,7 +1011,7 @@ do
         local KeyPicker = {
             Value = Info.Default;
             Toggled = false;
-            Mode = Info.Mode or 'Always'; -- Always, Toggle, Hold
+            Mode = Info.Mode or 'Toggle'; -- Always, Toggle, Hold
             Type = 'KeyPicker';
             Callback = Info.Callback or function(Value) end;
             ChangedCallback = Info.ChangedCallback or function(New) end;
@@ -1020,8 +1020,8 @@ do
         };
 
         if KeyPicker.SyncToggleState then
-            Info.Modes = { 'Always' }
-            Info.Mode = 'Always'
+            Info.Modes = { 'Toggle' }
+            Info.Mode = 'Toggle'
         end
 
         local PickOuter = Library:Create('Frame', {
@@ -1176,7 +1176,24 @@ do
         end;
 
         function KeyPicker:GetState()
-            return true;
+            if KeyPicker.Mode == 'Always' then
+                return true;
+            elseif KeyPicker.Mode == 'Hold' then
+                if KeyPicker.Value == 'None' then
+                    return false;
+                end
+
+                local Key = KeyPicker.Value;
+
+                if Key == 'MB1' or Key == 'MB2' then
+                    return Key == 'MB1' and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1)
+                        or Key == 'MB2' and InputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton2);
+                else
+                    return InputService:IsKeyDown(Enum.KeyCode[KeyPicker.Value]);
+                end;
+            else
+                return KeyPicker.Toggled;
+            end;
         end;
 
         function KeyPicker:SetValue(Data)
@@ -1201,7 +1218,9 @@ do
         end
 
         function KeyPicker:DoClick()
-            ParentObj:SetValue(not ParentObj.Value)
+            if ParentObj.Type == 'Toggle' and KeyPicker.SyncToggleState then
+                ParentObj:SetValue(not ParentObj.Value)
+            end
 
             Library:SafeCallback(KeyPicker.Callback, KeyPicker.Toggled)
             Library:SafeCallback(KeyPicker.Clicked, KeyPicker.Toggled)
@@ -1237,7 +1256,13 @@ do
                 Event = InputService.InputBegan:Connect(function(Input)
                     local Key;
 
-                    Key = 'MB1';
+                    if Input.UserInputType == Enum.UserInputType.Keyboard then
+                        Key = Input.KeyCode.Name;
+                    elseif Input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        Key = 'MB1';
+                    elseif Input.UserInputType == Enum.UserInputType.MouseButton2 then
+                        Key = 'MB2';
+                    end;
 
                     Break = true;
                     Picking = false;
@@ -1258,8 +1283,23 @@ do
         end);
 
         Library:GiveSignal(InputService.InputBegan:Connect(function(Input)
-            if (true) then
-                KeyPicker:DoClick()
+            if (not Picking) then
+                if KeyPicker.Mode == 'Toggle' then
+                    local Key = KeyPicker.Value;
+
+                    if Key == 'MB1' or Key == 'MB2' then
+                        if Key == 'MB1' and Input.UserInputType == Enum.UserInputType.MouseButton1
+                        or Key == 'MB2' and Input.UserInputType == Enum.UserInputType.MouseButton2 then
+                            KeyPicker.Toggled = not KeyPicker.Toggled
+                            KeyPicker:DoClick()
+                        end;
+                    elseif Input.UserInputType == Enum.UserInputType.Keyboard then
+                        if Input.KeyCode.Name == Key then
+                            KeyPicker.Toggled = not KeyPicker.Toggled;
+                            KeyPicker:DoClick()
+                        end;
+                    end;
+                end;
 
                 KeyPicker:Update();
             end;
